@@ -76,6 +76,7 @@ while video_capture.isOpened():
 
     height, width, _ = image_to_process.shape
 
+
     # Определение класса машин ("2") в COCO
     results = model.track(image_to_process, persist=False)
     detections = results[0].boxes
