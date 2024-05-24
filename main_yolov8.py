@@ -90,7 +90,7 @@ while video_capture.isOpened():
 
     height, width, _ = image_to_process.shape
 
-    results = model.predict(image_to_process)
+    results = model.track(image_to_process, persist=False)
 
     frame_ = results[0].plot()
 
