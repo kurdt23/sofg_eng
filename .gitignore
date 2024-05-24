@@ -1,0 +1,27 @@
+# Python files
+*.pyc
+*.pkl
+*.pt
+__pycache__/
+.pytest_cache/
+*.pyo
+
+# Virtual environment
+.venv/
+
+# DVC related
+.dvc/
+dvc cloud_remote add --default myremote \
+# Others
+.env
+pytest/
+
+nul
+
+/__init__
+/Dockerfile
+/image_test_free.png
+/image_test_not_free.png
+/pipeline.jenkins
+/video.mp4
+/yolov8n.pt

@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+    stages {
+        stage('Clone') {
+            steps {
+                git url: 'https://github.com/your-repo-url.git', branch: 'main'
+            }
+        }
+        stage('Install Dependencies') {
+            steps {
+                sh 'chmod +x install.sh && ./install.sh'
+            }
+        }
+        stage('Install DVC and Sync Data') {
+            steps {
+                sh 'pip install dvc'
+                sh 'dvc pull'
+            }
+        }
+        stage('Run Tests') {
+            steps {
+                sh 'pytest tests/'
+            }
+        }
+        stage('Run Linter') {
+            steps {
+                sh 'flake8 .'
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t your-image-name .'
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([string(credentialsId: 'dockerhub-credentials', variable: 'DOCKERHUB_PASSWORD')]) {
+                    sh 'docker login -u your-dockerhub-username -p $DOCKERHUB_PASSWORD'
+                    sh 'docker push your-image-name'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
