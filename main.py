@@ -12,6 +12,7 @@ TOKEN = config['telegram']['TOKEN']
 chat_id = config['telegram']['chat_id']
 video_path = config['video']['path']
 
+
 # Загрузка предварительно обученной YOLOv8 модели
 model = YOLO('yolov8n.pt')
 
