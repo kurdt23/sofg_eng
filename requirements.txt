@@ -1,5 +1,9 @@
+dvc
 numpy
-opencv-python
+opencv-python-headless
+pytest
 pyyaml
 requests
+torch
+torchvision
 ultralytics
