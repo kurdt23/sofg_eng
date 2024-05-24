@@ -216,3 +216,4 @@ while video_capture.isOpened():
 # Закрытие всех окон с кадрами после завершения
 video_capture.release()
 cv2.destroyAllWindows()
+# l
