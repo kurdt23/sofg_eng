@@ -261,7 +261,7 @@ while video_capture.isOpened():
         break
         # Очищаем всё после завершения.
 
-"""Практическое
-задание №3  video_capture.release() вынести вне цикла"""
+"""Практическое задание №3  
+video_capture.release() вынести вне цикла"""
 video_capture.release()
 cv2.destroyAllWindows()
