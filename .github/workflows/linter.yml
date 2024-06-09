@@ -19,7 +19,11 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install dvc dvc-gdrive flake8 numpy opencv-python-headless pytest requests
-        
+
+    - name: Pull data from DVC
+      run: |
+        dvc pull video.mp4.dvc    
+
     - name: Lint with flake8
       run: |
         # ignore 'Loop 32' is too complex and 'line too long'
