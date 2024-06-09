@@ -1,8 +1,15 @@
 import unittest
 import cv2
-
+import os
+import subprocess
 
 class TestDataQuality(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        """Убедитесь, что видеофайл загружен из DVC перед запуском тестов"""
+        if not os.path.exists('./video.mp4'):
+            subprocess.run(['dvc', 'pull', 'video.mp4.dvc'], check=True)
+
     def test_video_readability(self):
         """Тест считывание файла с видео"""
         cap = cv2.VideoCapture('./video.mp4')
