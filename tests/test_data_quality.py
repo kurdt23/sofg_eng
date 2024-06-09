@@ -21,10 +21,13 @@ class TestDataQuality(unittest.TestCase):
                 print(result.stdout.decode('utf-8'))
                 print(result.stderr.decode('utf-8'), file=sys.stderr)
             except subprocess.TimeoutExpired:
-                print("Timeout: dvc pull took too long", file=sys.stderr)
+                print("Тайм-аут: dvc pull занял слишком много времени", file=sys.stderr)
                 sys.exit(1)
             except subprocess.CalledProcessError as e:
-                print(f"Error: {e.stderr.decode('utf-8')}", file=sys.stderr)
+                print(f"Ошибка: {e.stderr.decode('utf-8')}", file=sys.stderr)
+                sys.exit(1)
+            except Exception as e:
+                print(f"Непредвиденная ошибка: {e}", file=sys.stderr)
                 sys.exit(1)
 
     def test_video_readability(self):
