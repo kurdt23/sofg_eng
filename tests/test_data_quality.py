@@ -3,6 +3,7 @@ import cv2
 import os
 import subprocess
 
+
 class TestDataQuality(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
