@@ -22,7 +22,9 @@ jobs:
 
     - name: Configure DVC Remote
       run: |
+        dvc remote add -d myremote gdrive://1aovolB0nduTx2FeOM7z8IuG_y14rSeRw
         dvc remote modify myremote --local gdrive_user_credentials_file gdrive.json
+        dvc pull video.mp4.dvc
 
     - name: Pull data from DVC
       run: |
