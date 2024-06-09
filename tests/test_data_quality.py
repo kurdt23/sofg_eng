@@ -1,7 +1,8 @@
-import unittest
 import cv2
 import os
 import subprocess
+import sys
+import unittest
 
 
 class TestDataQuality(unittest.TestCase):
@@ -9,7 +10,22 @@ class TestDataQuality(unittest.TestCase):
     def setUpClass(cls):
         """Убедитесь, что видеофайл загружен из DVC перед запуском тестов"""
         if not os.path.exists('./video.mp4'):
-            subprocess.run(['dvc', 'pull', 'video.mp4.dvc'], check=True)
+            try:
+                result = subprocess.run(
+                    ['dvc', 'pull', 'video.mp4.dvc'],
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    timeout=300  # Устанавливаем таймаут в 5 минут
+                )
+                print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'), file=sys.stderr)
+            except subprocess.TimeoutExpired:
+                print("Timeout: dvc pull took too long", file=sys.stderr)
+                sys.exit(1)
+            except subprocess.CalledProcessError as e:
+                print(f"Error: {e.stderr.decode('utf-8')}", file=sys.stderr)
+                sys.exit(1)
 
     def test_video_readability(self):
         """Тест считывание файла с видео"""
