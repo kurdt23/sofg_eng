@@ -17,7 +17,7 @@ properties([disableConcurrentBuilds()])
 //     }
 
     stages {
-         stage('Start') {
+        stage('Start') {
             steps {
                 script {
                     echo 'Начало работы скриптов.'
