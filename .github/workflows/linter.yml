@@ -18,7 +18,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install dvc dvc-gdrive flake8 numpy opencv-python-headless pytest requests
+        pip install dvc dvc-gdrive flake8 numpy opencv-python-headless pytest requests wget
 
     - name: Install DVC with GDrive support
       run: pip install 'dvc[gdrive]'
@@ -26,11 +26,9 @@ jobs:
     - name: Setup DVC
       uses: iterative/setup-dvc@v1
 
-    - name: DVC pull
-      env:
-        GDRIVE_CREDENTIALS_DATA: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+    - name: Get test video
       run: |
-        dvc pull
+        wget https://drive.google.com/file/d/1Bv8pKIf10KoDqw_QTOEQjeJPV0scNpLy/view?usp=sharing
 
     - name: Lint with flake8
       run: |
