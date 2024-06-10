@@ -8,14 +8,14 @@ import unittest
 class TestDataQuality(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        """Убедитесь, что видеофайл загружен из DVC перед запуском тестов"""
-        if os.path.exists('./video.mp4'):
-            print("Видео найдено. Продолжаем тестирование.")
-        else:
-            print("Видео не найдено. Попытка загрузить через DVC...")
+        """Убедитесь, что видеофайл загружен перед запуском тестов"""
+        video_path = './video.mp4'
+        if not os.path.exists(video_path):
+            print("Видео не найдено. Попытка скачать через wget...")
             try:
                 result = subprocess.run(
-                    ['dvc', 'pull', 'video.mp4.dvc'],
+                    ['wget', '-O', video_path,
+                     'https://drive.google.com/uc?export=download&id=1Bv8pKIf10KoDqw_QTOEQjeJPV0scNpLy'],
                     check=True,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
@@ -24,7 +24,7 @@ class TestDataQuality(unittest.TestCase):
                 print(result.stdout.decode('utf-8'))
                 print(result.stderr.decode('utf-8'), file=sys.stderr)
             except subprocess.TimeoutExpired:
-                print("Тайм-аут: dvc pull занял слишком много времени", file=sys.stderr)
+                print("Тайм-аут: wget занял слишком много времени", file=sys.stderr)
                 sys.exit(1)
             except subprocess.CalledProcessError as e:
                 print(f"Ошибка: {e.stderr.decode('utf-8')}", file=sys.stderr)
