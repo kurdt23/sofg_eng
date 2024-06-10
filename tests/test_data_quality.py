@@ -10,13 +10,14 @@ class TestDataQuality(unittest.TestCase):
     def setUpClass(cls):
         """Убедитесь, что видеофайл загружен из DVC перед запуском тестов"""
         if not os.path.exists('./video.mp4'):
+            print("Видео не найдено. Попытка загрузить через DVC...")
             try:
                 result = subprocess.run(
                     ['dvc', 'pull', 'video.mp4.dvc'],
                     check=True,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
-                    timeout=300  # Устанавливаем таймаут в 5 минут
+                    timeout=120  # Устанавливаем таймаут в 2 минуты
                 )
                 print(result.stdout.decode('utf-8'))
                 print(result.stderr.decode('utf-8'), file=sys.stderr)
@@ -29,9 +30,13 @@ class TestDataQuality(unittest.TestCase):
             except Exception as e:
                 print(f"Непредвиденная ошибка: {e}", file=sys.stderr)
                 sys.exit(1)
+        else:
+            print("Видео найдено. Продолжаем тестирование.")
 
     def test_video_readability(self):
         """Тест считывание файла с видео"""
+        if not os.path.exists('./video.mp4'):
+            self.fail("Видео отсутствует.")
         cap = cv2.VideoCapture('./video.mp4')
         ret, frame = cap.read()
         cap.release()
@@ -39,6 +44,8 @@ class TestDataQuality(unittest.TestCase):
 
     def test_frame_size(self):
         """Проверка размеров кадров видео"""
+        if not os.path.exists('./video.mp4'):
+            self.fail("Видео отсутствует.")
         cap = cv2.VideoCapture('./video.mp4')
         ret, frame = cap.read()
         cap.release()
@@ -49,6 +56,8 @@ class TestDataQuality(unittest.TestCase):
 
     def test_video_duration(self):
         """Проверка длительности видео (больше 1 секунды)"""
+        if not os.path.exists('./video.mp4'):
+            self.fail("Видео отсутствует.")
         cap = cv2.VideoCapture('./video.mp4')
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = cap.get(cv2.CAP_PROP_FPS)
