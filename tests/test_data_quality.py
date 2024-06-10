@@ -9,7 +9,9 @@ class TestDataQuality(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Убедитесь, что видеофайл загружен из DVC перед запуском тестов"""
-        if not os.path.exists('./video.mp4'):
+        if os.path.exists('./video.mp4'):
+            print("Видео найдено. Продолжаем тестирование.")
+        else:
             print("Видео не найдено. Попытка загрузить через DVC...")
             try:
                 result = subprocess.run(
@@ -30,8 +32,6 @@ class TestDataQuality(unittest.TestCase):
             except Exception as e:
                 print(f"Непредвиденная ошибка: {e}", file=sys.stderr)
                 sys.exit(1)
-        else:
-            print("Видео найдено. Продолжаем тестирование.")
 
     def test_video_readability(self):
         """Тест считывание файла с видео"""
