@@ -26,7 +26,24 @@ RUN apt-get update && apt-get install -y \
   zip \
   bison
 
+# Create Jenkins user
 RUN useradd -ms /bin/bash Jenkins
 
+# Switch to Jenkins user
 USER Jenkins
+
+# Set the working directory
 WORKDIR /home/Jenkins
+
+# Copy the repository contents into the container
+COPY . .
+
+# Install Python dependencies
+RUN python3 -m venv venv
+RUN . venv/bin/activate && pip3 install --upgrade pip && pip3 install -r requirements.txt
+
+# Download the pre-trained model
+RUN . venv/bin/activate && pip3 install gdown && gdown https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov8n.pt -O yolov8n.pt
+
+# Modify the config file
+RUN sed -i 's|path: \x27./video.mp4\x27|path: \x270\x27|' config.yaml
