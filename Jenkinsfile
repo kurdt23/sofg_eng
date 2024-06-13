@@ -1,34 +1,22 @@
 pipeline {
-// Запрет одновременного запуска разных сборок
-properties([disableConcurrentBuilds()])
 
     // Использование Docker в качестве агента
     agent {
         docker {
-            // Docker file attached below. Image pushed to dockerhub
-            image 'efimovaleksey/mlops:stable'
-            args '-u root:sudo '
+            // Файл докера расположен в корне репозитория. Образ размещен на dockerhub
+            image "kurdt23/sof_eng:car"
+
+            // Предоставление root-прав и монтаж Docker сокета
+            args "-u root:sudo -v /var/run/docker.sock:/var/run/docker.sock"
         }
     }
-
-//     environment {
-//         JENKINS_HOME = "$JENKINS_HOME"
-//         BUILD = "${JENKINS_HOME}/workspace/mlops_final"
-//     }
 
     stages {
         stage('Start') {
             steps {
                 script {
-                    echo 'Начало работы скриптов.'
+                    echo "Начало работы скриптов"
                 }
-            }
-        }
-        stage('Preparation') {
-            steps {
-                // Очистка рабочего пространства
-                cleanWs()
-                checkout scm
             }
         }
 
@@ -43,77 +31,103 @@ properties([disableConcurrentBuilds()])
 
         stage('Install Dependencies') {
             steps {
-                // Установка зависимостей
-                script {
-                    if (isUnix()) {
-                        sh 'chmod +x install.sh && ./install.sh'
-                        sh './venv/scripts/activate.bat'
-                    } else {
-                        bat 'install.bat'
-                        bat '.\\venv\\scripts\\activate.bat'
-                    }
-                }
+                // Подключение виртуальной среды
+                sh "python3 -m venv venv"
+                sh ". venv/bin/activate"
+
+                //  Установка зависимостей
+                sh "pip3 install --upgrade pip"
+                sh "pip3 install -r requirements.txt"
+
+                // Установка предварительно обученной модели
+                sh "pip3 install gdown"
+                sh "gdown https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov8n.pt -O yolov8n.pt"
+            }
+        }
+
+        stage('Run linter flake8') {
+            steps {
+                // Проверка кода литером flake8
+                sh "pip3 install flake8"
+                sh "flake8 . --ignore=C901,E402,E501 --count --select=E9,F63,F7,F82 --show-source --statistics --exit-zero --max-complexity=10 --max-line-length=127"
             }
         }
 
         stage('Install DVC and Sync Data') {
             steps {
-                // Установка DVC и конфигурация удаленного хранилища
-                sh 'pip install dvc-gdrive'
+                 // Установка DVC и конфигурация удаленного хранилища
+                 sh "pip3 install dvc dvc-gdrive"
 
                 // Копирование секретного файла для DVC
 		        withCredentials([file(credentialsId: 'gdrive', variable: 'gdrive')]) {
-		            sh "cp $gdrive $WORKSPACE/gdrive.json"
+		            sh "cp \$gdrive $WORKSPACE"
 		        }
 
-                // Модификация удаленного хранилища DVC с использованием секретного файла
-                sh "dvc remote modify myremote --local gdrive_user_credentials_file $WORKSPACE/gdrive.json"
+                 // Модификация удаленного хранилища DVC с использованием секретного файла
+                 sh "dvc remote modify myremote --local gdrive_user_credentials_file gdrive.json"
 
-                sh 'dvc pull'
+                 // Синхронизация с удалённым хранилищем google-drive
+                 sh "dvc pull"
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'pytest tests/'
+                // Запуск модульных тестов и тестов на проверку данных
+                sh "python3 -m unittest discover -s $WORKSPACE/tests"
             }
         }
 
-
-        stage('Build Docker image') {
+        stage('Build Docker Image') {
             steps {
-                 script {
-                    // Для Линукс
-                    if (isUnix()) {
-                        sh 'docker build -t sof_eng .'
-                    } else {
-                        bat "docker build -t sof_eng -f Dockerfile ."
-                    }
-                 }
+                // Загрузка Docker in Docker
+                sh "apt-get install -y docker.io"
+
+                // Запуск Docker демона в фоновом режиме
+                sh "dockerd-entrypoint.sh &"
+
+                // Ожидание готовности Docker демона
+                sh "sleep 10"
+
+                // Логин в DockerHub
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'USERNAME',
+                    passwordVariable: 'PASSWORD')]) {
+                    sh "echo $PASSWORD | docker login -u $USERNAME --password-stdin"
+                }
+
+                // Сборка Docker образа
+                sh "docker build -t kurdt23/sof_eng:car ."
+            }
+        }
+
+        stage('Update Config') {
+            steps {
+                // Установка CHAT_ID для телеграм бота
+                withCredentials([string(credentialsId: 'YOUR_CHAT_ID', variable: 'YOUR_CHAT_ID')]) {
+                    sh "sed -i 's/chat_id:.*/chat_id: \"${YOUR_CHAT_ID}\"/' config.yaml"
+                }
+            }
+        }
+
+        stage('Run Python Script') {
+            steps {
+                // Реализация приложения в виде образа Docker
+                sh "docker run --rm kurdt23/sof_eng:car python main.py"
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                // Логин в DockerHub и пуш Docker образа
-                withCredentials([string(credentialsId: 'dockerhub-credentials', variable: 'DOCKERHUB_PASSWORD')]) {
-                    sh 'docker login -u kurdt23 -p $DOCKERHUB_PASSWORD'
-                    sh 'docker push kurdt23/sof_eng'
-                }
+                // Пуш Docker образа в DockerHub
+                sh "docker push kurdt23/sof_eng:car"
             }
         }
 
         stage('Finish') {
             steps {
                 script {
-                    echo 'Работа скриптов завершена успешно'
+                    echo "Работа скриптов завершена успешно"
                 }
-            }
-        }
-
-        post {
-            always {
-                cleanWs()
             }
         }
     }
