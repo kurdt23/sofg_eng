@@ -9,10 +9,8 @@ LABEL description="docker agent for jenkins"
 # Disable Prompt During Packages Installation
 ARG DEBIAN_FRONTEND=noninteractive
 
-# Update Ubuntu Software repository
-RUN apt update
-
-RUN apt-get update && apt-get install -y \
+# Update Ubuntu Software repository and install packages as root
+RUN apt update && apt-get install -y \
   git \
   subversion \
   make \
@@ -26,24 +24,31 @@ RUN apt-get update && apt-get install -y \
   zip \
   bison
 
-# Create Jenkins user
+# Add Jenkins user
 RUN useradd -ms /bin/bash Jenkins
 
 # Switch to Jenkins user
 USER Jenkins
-
-# Set the working directory
 WORKDIR /home/Jenkins
 
-# Copy the repository contents into the container
+# Copy repository content
 COPY . .
 
-# Install Python dependencies
-RUN python3 -m venv venv
-RUN . venv/bin/activate && pip3 install --upgrade pip && pip3 install -r requirements.txt
+# Switch back to root user to create virtual environment
+USER root
 
-# Download the pre-trained model
-RUN . venv/bin/activate && pip3 install gdown && gdown https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov8n.pt -O yolov8n.pt
+# Create virtual environment
+RUN python3 -m venv /home/Jenkins/venv
 
-# Modify the config file
-RUN sed -i 's|path: \x27./video.mp4\x27|path: \x270\x27|' config.yaml
+# Change ownership of the virtual environment to Jenkins user
+RUN chown -R Jenkins: /home/Jenkins/venv
+
+# Switch back to Jenkins user
+USER Jenkins
+
+# Install Python dependencies (as Jenkins user)
+RUN . venv/bin/activate && pip3 install --upgrade pip
+RUN . venv/bin/activate && pip3 install -r requirements.txt
+
+# Update configuration file
+RUN sed -i 's/path: .\/video.mp4/path: 0/' config.yaml
