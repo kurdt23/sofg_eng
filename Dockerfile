@@ -1,5 +1,5 @@
 # Download base image ubuntu 22.04
-FROM ubuntu:22.04
+FROM kurdt23/sof_eng:car
 
 # LABEL about the custom image
 LABEL maintainer="organismus22@gmail.com"
