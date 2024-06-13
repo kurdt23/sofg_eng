@@ -1,6 +1,6 @@
 dvc
 numpy
-opencv-python-headless
+opencv-python
 pytest
 pyyaml
 requests
