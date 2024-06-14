@@ -24,7 +24,7 @@ pipeline {
             steps {
                 script {
                     // Клонирование репозитория Git
-                    git branch: 'main', url: 'https://github.com/kurdt23/sofg_eng'
+                    git branch: 'main', url: 'https://github.com/GachiSlave/sofg_eng'
                 }
             }
         }
@@ -37,27 +37,24 @@ pipeline {
 
                 //  Установка зависимостей
                 sh "pip3 install --upgrade pip"
-                sh "pip3 install -r requirements.txt"
+                sh 'pip3 install flake8 dvc-gdrive numpy opencv-python-headless'
+                // sh "pip3 install -r requirements.txt"
 
                 // Установка предварительно обученной модели
-                sh "pip3 install gdown"
-                sh "gdown https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov8n.pt -O yolov8n.pt"
+                // sh "pip3 install gdown"
+                // sh "gdown https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov8n.pt -O yolov8n.pt"
             }
         }
 
         stage('Run linter flake8') {
             steps {
                 // Проверка кода литером flake8
-                sh "pip3 install flake8"
                 sh "flake8 . --ignore=C901,E402,E501 --count --select=E9,F63,F7,F82 --show-source --statistics --exit-zero --max-complexity=10 --max-line-length=127"
             }
         }
 
         stage('Install DVC and Sync Data') {
             steps {
-                 // Установка DVC и конфигурация удаленного хранилища
-                 sh "pip3 install dvc dvc-gdrive"
-
                 // Копирование секретного файла для DVC
 		        withCredentials([file(credentialsId: 'gdrive', variable: 'gdrive')]) {
 		            sh "cp \$gdrive $WORKSPACE"
@@ -73,6 +70,12 @@ pipeline {
 
         stage('Run Tests') {
             steps {
+                // Установка libgl1 для OpenCV
+                sh "apt-get update && apt-get install -y libgl1"
+
+                // Копирование видеофайла
+                // sh "cp $WORKSPACE/video.mp4 $WORKSPACE/tests/video.mp4"
+
                 // Запуск модульных тестов и тестов на проверку данных
                 sh "python3 -m unittest discover -s $WORKSPACE/tests"
             }
@@ -112,7 +115,7 @@ pipeline {
         stage('Run Python Script') {
             steps {
                 // Реализация приложения в виде образа Docker
-                sh "docker run --rm kurdt23/sof_eng:car python main.py"
+                sh "docker run --rm kurdt23/sof_eng:car"
             }
         }
 
