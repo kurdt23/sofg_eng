@@ -31,4 +31,4 @@ WORKDIR /home/Jenkins
 COPY . .
 
 # Run the test script
-CMD ["python3", "test_data_quality.py"]
+CMD ["python3", "telegram_utils.py"]
