@@ -60,7 +60,7 @@ RUN . venv/bin/activate && pip3 install --upgrade pip
 RUN . venv/bin/activate && pip3 install --no-cache-dir -r requirements.txt
 
 # Update configuration file
-RUN sed -i 's/path: .\/video.mp4/path: 0/' config.yaml
+RUN sed -i 's|path: "./video.mp4"|path: "0"|' config.yaml
 
 # Run app when the container launches
 CMD ["python3", "main.py"]
