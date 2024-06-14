@@ -31,6 +31,7 @@ RUN apt update && apt-get install -y \
   libsm6 \
   libxrender1 \
   libxext6 \
+  xvfb \
   x11-apps
 
 # Add Jenkins user
@@ -62,5 +63,5 @@ RUN . venv/bin/activate && pip3 install --no-cache-dir -r requirements.txt
 # Update configuration file
 RUN sed -i 's|path: "./video.mp4"|path: "0"|' config.yaml
 
-# Run app when the container launches
-CMD ["python3", "main.py"]
+# Run app when the container launches with minimal virtual screen size
+ENTRYPOINT ["xvfb-run", "--auto-servernum", "--server-args=-screen 0 100x100x8", "python3", "main.py"]
