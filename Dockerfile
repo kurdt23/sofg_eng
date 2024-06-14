@@ -48,7 +48,7 @@ USER Jenkins
 
 # Install Python dependencies (as Jenkins user)
 RUN . venv/bin/activate && pip3 install --upgrade pip
-RUN . venv/bin/activate && pip3 install -r requirements.txt
+RUN . venv/bin/activate && pip3 install --no-cache-dir -r requirements.txt
 
 # Update configuration file
 RUN sed -i 's/path: .\/video.mp4/path: 0/' config.yaml
