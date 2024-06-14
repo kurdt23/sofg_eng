@@ -27,7 +27,11 @@ RUN apt update && apt-get install -y \
   libsm6 \
   libxext6 \
   libgl1-mesa-glx \
-  libglib2.0-0
+  libglib2.0-0 \
+  libsm6 \
+  libxrender1 \
+  libxext6 \
+  x11-apps
 
 # Add Jenkins user
 RUN useradd -ms /bin/bash Jenkins
