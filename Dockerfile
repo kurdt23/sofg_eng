@@ -22,7 +22,12 @@ RUN apt update && apt-get install -y \
   flex \
   gawk \
   zip \
-  bison
+  bison \
+  ffmpeg \
+  libsm6 \
+  libxext6 \
+  libgl1-mesa-glx \
+  libglib2.0-0
 
 # Add Jenkins user
 RUN useradd -ms /bin/bash Jenkins
@@ -52,3 +57,6 @@ RUN . venv/bin/activate && pip3 install --no-cache-dir -r requirements.txt
 
 # Update configuration file
 RUN sed -i 's/path: .\/video.mp4/path: 0/' config.yaml
+
+# Run app when the container launches
+CMD ["python3", "main.py"]
